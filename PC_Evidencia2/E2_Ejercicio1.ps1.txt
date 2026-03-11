@@ -1,0 +1,51 @@
+# Declaración de variables
+$i = 0
+$j = 0
+$listaips = @()
+$listaports = @(80,443,22)
+$ip = ""
+$pingip = $false
+
+# CAPTURA DE IPS
+do {
+    $ip = Read-Host "Ingrese una IP o escriba 'n' para terminar"
+
+    if ($ip -ne "n") {
+        $listaips += $ip
+        Write-Host "IP agregada con éxito"
+    }
+
+} while ($ip -ne "n")
+
+
+# RECORRER LISTA DE IPS 
+for ($i = 0; $i -lt $listaips.Count; $i++) {
+
+    Write-Host "`nProbando IP: $($listaips[$i])"
+
+    # Ping a la IP
+    $resultadoPing = Test-Connection -ComputerName $listaips[$i] -Count 1 -Quiet
+
+    if ($resultadoPing) {
+        Write-Host "Ping a $($listaips[$i]) exitoso"
+
+        # ----------- RECORRER PUERTOS -----------
+        for ($j = 0; $j -lt $listaports.Count; $j++) {
+
+            $resultadoPuerto = Test-NetConnection -ComputerName $listaips[$i] -Port $listaports[$j] -InformationLevel Quiet
+
+            if ($resultadoPuerto) {
+                Write-Host "$($listaips[$i]) : Puerto $($listaports[$j]) -> Éxito (Abierto)"
+            }
+            else {
+                Write-Host "$($listaips[$i]) : Puerto $($listaports[$j]) -> Fallo (Cerrado)"
+            }
+        }
+
+    }
+    else {
+        Write-Host "Ping a $($listaips[$i]) falló. No se revisan puertos."
+    }
+}
+
+Write-Host "`nFin del programa"
